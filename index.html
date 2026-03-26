@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EA License Manager</title>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta http-equiv="X-Frame-Options" content="DENY"/>
+<meta name="referrer" content="no-referrer"/>
+<style>
+:root{--bg:#0f1117;--sf:#1a1d27;--sf2:#21253a;--bd:#2e3347;--tx:#e2e8f0;--sub:#8892a4;--pri:#6366f1;--prh:#818cf8;--grn:#22c55e;--red:#ef4444;--yel:#f59e0b;--blu:#3b82f6;--pur:#a855f7;--sw:220px;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+.center-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#1e1b4b 0%,var(--bg) 65%)}
+.center-box{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:40px;width:400px;max-width:95vw}
+.box-logo{text-align:center;color:var(--pri);margin-bottom:14px}
+.box-logo svg{width:48px;height:48px}
+.box-title{text-align:center;font-size:21px;font-weight:700;margin-bottom:6px}
+.box-sub{text-align:center;color:var(--sub);font-size:12px;margin-bottom:28px;line-height:1.6}
+.step-head{font-size:11px;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.info-card{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--sub);margin-bottom:14px;line-height:1.8}
+.info-card code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;color:var(--prh)}
+.warn-card{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#b8860b;margin-bottom:14px;line-height:1.7}
+#app{display:flex;min-height:100vh}
+.sidebar{width:var(--sw);min-height:100vh;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:10}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:20px 18px;font-weight:700;font-size:15px;color:var(--pri);border-bottom:1px solid var(--bd)}
+.sidebar-nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--sub);text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer;transition:background .15s,color .15s}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+.nav-item:hover{background:var(--sf2);color:var(--tx)}
+.nav-item.active{background:rgba(99,102,241,.15);color:var(--pri)}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:6px}
+.sync-info{font-size:11px;color:var(--sub)}
+.sidebar-actions{display:flex;gap:6px}
+.btn-sm-icon{background:none;border:1px solid var(--bd);color:var(--sub);padding:4px 9px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .15s;flex:1;text-align:center}
+.btn-sm-icon:hover{background:var(--sf2);color:var(--tx)}
+.main-content{margin-left:var(--sw);flex:1;padding:28px}
+.page{display:none}.page.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-header h2{font-size:22px;font-weight:700;margin-bottom:2px}
+.page-sub{color:var(--sub);font-size:13px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon svg{width:20px;height:20px}
+.stat-icon.blue{background:rgba(59,130,246,.15);color:var(--blu)}
+.stat-icon.green{background:rgba(34,197,94,.15);color:var(--grn)}
+.stat-icon.red{background:rgba(239,68,68,.15);color:var(--red)}
+.stat-icon.yellow{background:rgba(245,158,11,.15);color:var(--yel)}
+.stat-value{font-size:26px;font-weight:700;line-height:1}
+.stat-label{font-size:12px;color:var(--sub);margin-top:4px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.section-title{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--sub)}
+.table{width:100%;border-collapse:collapse}
+.table th{text-align:left;padding:11px 14px;font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;background:var(--sf2);border-bottom:1px solid var(--bd)}
+.table td{padding:11px 14px;border-bottom:1px solid var(--bd);font-size:13px;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:rgba(255,255,255,.02)}
+.text-center{text-align:center;color:var(--sub)}
+.table-toolbar{display:flex;gap:10px;padding:14px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.table-toolbar input,.table-toolbar select{flex:1;min-width:140px}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.active,.badge.green{background:rgba(34,197,94,.15);color:var(--grn)}
+.badge.inactive{background:rgba(156,163,175,.15);color:#9ca3af}
+.badge.expired,.badge.red{background:rgba(239,68,68,.15);color:var(--red)}
+.badge.trial{background:rgba(245,158,11,.15);color:var(--yel)}
+.badge.monthly{background:rgba(59,130,246,.15);color:var(--blu)}
+.badge.lifetime{background:rgba(168,85,247,.15);color:var(--pur)}
+.badge.blue{background:rgba(59,130,246,.15);color:var(--blu)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--pri);color:#fff}.btn-primary:hover{background:var(--prh)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--sf2);color:var(--tx);border:1px solid var(--bd)}.btn-secondary:hover{background:var(--bd)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-full{width:100%;justify-content:center}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.4px}
+.form-row{display:flex;gap:14px}
+.form-row .form-group{flex:1}
+input,select,textarea{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:9px 12px;border-radius:8px;font-size:13px;outline:none;width:100%;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--pri)}
+input::placeholder{color:var(--sub)}
+input[type=password]{font-family:monospace;letter-spacing:2px}
+.input-icon{position:relative}
+.input-icon input{padding-right:40px}
+.input-icon .eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--sub);cursor:pointer;padding:4px;font-size:16px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:var(--sf);border:1px solid var(--bd);border-radius:14px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-large{width:700px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--bd)}
+.modal-header h3{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--sub);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.modal-close:hover{background:var(--sf2);color:var(--tx)}
+.modal-body{padding:22px;display:flex;flex-direction:column;gap:16px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--bd)}
+.mt4-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mt4-row input{flex:1}
+.mt4-add-row{display:flex;gap:8px;margin-top:8px}
+.mt4-add-row input{flex:1}
+.actions{display:flex;gap:6px}
+.license-key{font-family:monospace;font-size:12px;background:var(--sf2);padding:3px 8px;border-radius:5px;cursor:pointer;user-select:all;border:1px solid var(--bd)}
+.license-key:hover{border-color:var(--pri)}
+.expiry-near{color:var(--yel);font-weight:600}
+.expiry-past{color:var(--red)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.detail-item label{font-size:11px;font-weight:600;text-transform:uppercase;color:var(--sub);display:block;margin-bottom:3px}
+.error-msg{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 13px;font-size:13px}
+.guide-section{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:22px;margin-bottom:16px}
+.guide-section h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--pri)}
+.guide-section p{color:var(--sub);font-size:13px;margin-bottom:8px;line-height:1.7}
+.guide-section p code,.guide-section li code{background:var(--sf2);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--prh)}
+.guide-section ol,.guide-section ul{color:var(--sub);font-size:13px;padding-left:18px;line-height:2}
+.code-block{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:13px 15px;margin-bottom:10px;position:relative}
+.code-block pre{font-family:monospace;font-size:12px;color:var(--tx);white-space:pre-wrap;line-height:1.7}
+.url-row{display:flex;align-items:center;gap:10px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;margin-bottom:10px}
+.url-row code{font-family:monospace;font-size:12px;color:var(--grn);flex:1;word-break:break-all}
+.saving-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pri),var(--prh),var(--pur));display:none;z-index:999;animation:progress 1.5s linear infinite}
+@keyframes progress{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+.saving-bar.show{display:block}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:500;transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;pointer-events:none;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:var(--grn);color:var(--grn)}
+.toast.error{border-color:var(--red);color:var(--red)}
+.toast.info{border-color:var(--blu);color:var(--blu)}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.sidebar{display:none}.main-content{margin-left:0;padding:16px}}
+</style>
+</head>
+<body>
+<div id="screen-pass" class="center-screen" style="display:none">
+<div class="center-box">
+<div class="box-logo">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+</div>
+<div class="box-title">EA License Manager</div>
+<div class="box-sub">Nhập mật khẩu dashboard để tiếp tục</div>
+<div class="form-group" style="margin-bottom:14px">
+<label>Mật khẩu</label>
+<div class="input-icon">
+<input type="password" id="inp-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')verifyPass()"/>
+<button class="eye" onclick="togglePwd('inp-pass',this)">👁</button>
+</div>
+</div>
+<div id="pass-error" class="error-msg" style="display:none;margin-bottom:12px"></div>
+<button class="btn btn-primary btn-full" onclick="verifyPass()">Đăng nhập</button>
+<p style="font-size:11px;color:var(--sub);text-align:center;margin-top:14px">Mật khẩu mặc định: <code style="font-family:monospace;color:var(--prh)">Admin@2024!</code></p>
+</div>
+</div>
+<div id="screen-setup" class="center-screen" style="display:none">
+<div class="center-box" style="width:440px">
+<div class="box-logo">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+</div>
+<div class="box-title">Kết nối GitHub</div>
+<div class="box-sub">Cấu hình lần đầu — dữ liệu lưu trên GitHub repo của bạn</div>
+
+<div class="step-head">Thông tin Repository</div>
+<div class="form-row" style="margin-bottom:12px">
+<div class="form-group"><label>GitHub Username</label><input id="s-owner" placeholder="mrBang"/></div>
+<div class="form-group"><label>Tên Repo</label><input id="s-repo" placeholder="ea-license-data"/></div>
+</div>
+
+<div class="step-head">Personal Access Token</div>
+<div class="warn-card">⚠ Token chỉ lưu trong phiên làm việc (sessionStorage), tự xóa khi đóng tab. Không gửi tới bất kỳ server nào ngoài <code>api.github.com</code>.</div>
+<div class="form-group" style="margin-bottom:6px">
+<label>Token (scope: repo)</label>
+<div class="input-icon">
+<input type="password" id="s-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
+<button class="eye" onclick="togglePwd('s-token',this)">👁</button>
+</div>
+</div>
+<p style="font-size:11px;color:var(--sub);margin-bottom:16px">
+Tạo tại <b>github.com/settings/tokens/new</b> → scope: <code style="font-family:monospace;color:var(--prh)">repo</code>
+</p>
+<div id="setup-error" class="error-msg" style="display:none;margin-bottom:12px"></div>
+<button class="btn btn-primary btn-full" id="btn-setup" onclick="doSetup()">Kiểm tra & Kết nối</button>
+</div>
+</div>
+<div id="app" style="display:none">
+<aside class="sidebar">
+<div class="sidebar-logo">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+EA License
+</div>
+<nav class="sidebar-nav">
+<a class="nav-item active" onclick="showPage('dashboard')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
+</a>
+<a class="nav-item" onclick="showPage('licenses')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Quản lý License
+</a>
+<a class="nav-item" onclick="showPage('guide')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Hướng dẫn MQL4
+</a>
+<a class="nav-item" onclick="showPage('settings')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Cài đặt
+</a>
+</nav>
+<div class="sidebar-footer">
+<div class="sync-info" id="sync-info">Chưa đồng bộ</div>
+<div class="sidebar-actions">
+<button class="btn-sm-icon" onclick="loadData(true)" title="Tải lại">↻ Sync</button>
+<button class="btn-sm-icon" onclick="doLogout()" title="Đăng xuất">Thoát</button>
+</div>
+</div>
+</aside>
+
+<main class="main-content">
+
+
+<div id="page-dashboard" class="page active">
+<div class="page-header">
+<div><h2>Dashboard</h2><span class="page-sub">Tổng quan hệ thống bản quyền EA</span></div>
+</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="stat-value" id="st-total">-</div><div class="stat-label">Tổng License</div></div></div>
+<div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-value" id="st-active">-</div><div class="stat-label">Đang hoạt động</div></div></div>
+<div class="stat-card"><div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="stat-value" id="st-expired">-</div><div class="stat-label">Hết hạn / Tắt</div></div></div>
+<div class="stat-card"><div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="stat-value" id="st-accounts">-</div><div class="stat-label">MT4 Accounts</div></div></div>
+</div>
+<div class="section-title">License gần đây</div>
+<div class="card">
+<table class="table"><thead><tr><th>Key</th><th>Khách hàng</th><th>EA</th><th>Loại</th><th>Hết hạn</th><th>Trạng thái</th></tr></thead>
+<tbody id="dash-tbody"><tr><td colspan="6" class="text-center">Đang tải...</td></tr></tbody></table>
+</div>
+</div>
+
+
+<div id="page-licenses" class="page">
+<div class="page-header">
+<div><h2>Quản lý License</h2><span class="page-sub">Toàn bộ bản quyền EA</span></div>
+<button class="btn btn-primary" onclick="openCreateModal()">+ Tạo License</button>
+</div>
+<div class="card">
+<div class="table-toolbar">
+<input id="lic-q" placeholder="Tìm key, tên, EA..." oninput="renderLicenses()"/>
+<select id="lic-st" onchange="renderLicenses()"><option value="">Tất cả TT</option><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Expired">Expired</option></select>
+<select id="lic-tp" onchange="renderLicenses()"><option value="">Tất cả loại</option><option value="Trial">Trial</option><option value="Monthly">Monthly</option><option value="Lifetime">Lifetime</option></select>
+</div>
+<table class="table"><thead><tr><th>License Key</th><th>Khách hàng</th><th>EA</th><th>Loại</th><th>Hết hạn</th><th>Accounts</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+<tbody id="lic-tbody"><tr><td colspan="8" class="text-center">Đang tải...</td></tr></tbody></table>
+</div>
+</div>
+
+
+<div id="page-guide" class="page">
+<div class="page-header"><h2>Hướng dẫn MQL4</h2><span class="page-sub">Tích hợp EA với hệ thống bản quyền GitHub</span></div>
+<div class="guide-section">
+<h3>1. URL file xác thực (dán vào MetaTrader Allowed URLs)</h3>
+<div class="url-row"><code id="raw-url">–</code><button class="btn btn-secondary btn-sm" onclick="copyText(qs('#raw-url').textContent)">Copy</button></div>
+<p>File <code>verify.txt</code> tự động cập nhật mỗi khi bạn thay đổi license. GitHub CDN cache tối đa <code>5 phút</code> → EA bị thu hồi license sẽ dừng trong vòng 5 phút.</p>
+</div>
+<div class="guide-section">
+<h3>2. Code MQL4 — copy vào đầu file EA trước khi compile</h3>
+<div class="code-block"><pre id="mql-code">// Đang tải...</pre></div>
+<button class="btn btn-secondary" onclick="copyMQL()">📋 Copy MQL4 Code</button>
+</div>
+<div class="guide-section">
+<h3>3. Quy trình cấp license cho khách hàng</h3>
+<ol>
+<li>Tạo license trên Dashboard → lấy <code>License Key</code></li>
+<li>Thêm số tài khoản MT4 của khách vào license</li>
+<li>Sửa trong code EA: <code>LICENSE_KEY</code> và <code>VERIFY_URL</code></li>
+<li>Compile → gửi file <code>.ex4</code> cho khách</li>
+<li>Khách: <b>Tools → Options → Expert Advisors → Allow WebRequest</b> → thêm URL ở trên</li>
+<li>Để thu hồi từ xa: Đổi status → <b>Inactive</b> → EA dừng trong ≤5 phút</li>
+</ol>
+</div>
+<div class="guide-section">
+<h3>4. Định dạng file verify.txt</h3>
+<div class="code-block"><pre>EA-F73C47-82F4AF-4A43A4|ACTIVE|2026-12-31|12345678,99999999
+EA-1876FC-55E789-430CB5|ACTIVE||14683013
+EA-AABBCC-DDEEFF-001122|INACTIVE||
+
+# Cột 1: License Key
+# Cột 2: ACTIVE / INACTIVE / EXPIRED
+# Cột 3: Ngày hết hạn YYYY-MM-DD (để trống = Lifetime)
+# Cột 4: Các MT4 ID cách nhau bởi dấu phẩy</pre></div>
+</div>
+</div>
+
+
+<div id="page-settings" class="page">
+<div class="page-header"><h2>Cài đặt</h2><span class="page-sub">Bảo mật và cấu hình hệ thống</span></div>
+<div class="guide-section">
+<h3>Đổi mật khẩu Dashboard</h3>
+<p>Mật khẩu bảo vệ giao diện quản lý. Lưu dưới dạng SHA-256 trong localStorage của trình duyệt này.</p>
+<div class="form-row" style="max-width:480px;margin-top:12px">
+<div class="form-group"><label>Mật khẩu hiện tại</label><input type="password" id="pwd-cur" placeholder="••••••••"/></div>
+<div class="form-group"><label>Mật khẩu mới</label><input type="password" id="pwd-new" placeholder="••••••••"/></div>
+<div class="form-group"><label>Xác nhận</label><input type="password" id="pwd-cfm" placeholder="••••••••"/></div>
+</div>
+<button class="btn btn-primary" style="margin-top:12px" onclick="changePwd()">Đổi mật khẩu</button>
+</div>
+<div class="guide-section">
+<h3>GitHub Token</h3>
+<p>Token lưu trong <code>sessionStorage</code> (tự xóa khi đóng tab). Để đổi token, đăng xuất rồi đăng nhập lại.</p>
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+<div><b>Owner:</b> <code id="cfg-show-owner" style="font-family:monospace;color:var(--prh)">–</code></div>
+<div><b>Repo:</b> <code id="cfg-show-repo" style="font-family:monospace;color:var(--prh)">–</code></div>
+<div><b>Token:</b> <code style="font-family:monospace;color:var(--sub)">••••••••••••••• (ẩn)</code></div>
+</div>
+<button class="btn btn-danger" style="margin-top:14px" onclick="doLogout()">Đăng xuất & Xóa Token</button>
+</div>
+<div class="guide-section">
+<h3>Lưu ý bảo mật</h3>
+<ul style="color:var(--sub);font-size:13px;padding-left:18px;line-height:2.2">
+<li>GitHub PAT lưu <b>sessionStorage</b> — tự xóa khi đóng tab/browser</li>
+<li>Mật khẩu dashboard lưu dạng <b>SHA-256 hash</b> trong localStorage — không thể giải mã ngược</li>
+<li>Dữ liệu license lưu trên <b>GitHub repo riêng tư</b> của bạn — chỉ bạn và người có PAT mới đọc được</li>
+<li>File <code>verify.txt</code> có thể public (chứa key + MT4 ID) → bảo mật bởi key khó đoán + MT4 ID cần phải được admin thêm tay</li>
+<li>Không dùng PAT cho mục đích khác ngoài repo này</li>
+</ul>
+</div>
+</div>
+
+</main>
+</div>
+<div id="m-lic" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModals()">
+<div class="modal" onclick="event.stopPropagation()">
+<div class="modal-header"><h3 id="m-lic-title">Tạo License mới</h3><button class="modal-close" onclick="closeModals()">✕</button></div>
+<div class="modal-body">
+<input type="hidden" id="f-key"/>
+<div class="form-row">
+<div class="form-group"><label>Tên khách hàng *</label><input id="f-name" placeholder="Nguyễn Văn A"/></div>
+<div class="form-group"><label>Tên EA *</label><input id="f-ea" placeholder="ScalperPro v2"/></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Loại bản quyền *</label>
+<select id="f-type" onchange="onTypeChange()">
+<option value="Trial">Trial — Dùng thử</option>
+<option value="Monthly">Monthly — Hàng tháng</option>
+<option value="Lifetime">Lifetime — Vĩnh viễn</option>
+</select>
+</div>
+<div class="form-group" id="f-exp-grp"><label>Ngày hết hạn</label><input type="date" id="f-expiry"/></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Max MT4 Accounts</label><input type="number" id="f-max" value="1" min="1" max="50"/></div>
+<div class="form-group"><label>Trạng thái</label><select id="f-status"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Số điện thoại</label><input id="f-phone" placeholder="0912 345 678"/></div>
+<div class="form-group"><label>Email</label><input id="f-email" placeholder="khachhang@gmail.com"/></div>
+</div>
+<div class="form-group"><label>Ghi chú</label><input id="f-note" placeholder="Ghi chú tùy chọn..."/></div>
+<div class="form-group">
+<label>MT4 Accounts (thêm ngay)</label>
+<div id="f-mt4-list"></div>
+<div class="mt4-add-row">
+<input id="f-mt4-id" placeholder="MT4 ID (vd: 14683013)"/>
+<input id="f-mt4-br" placeholder="Broker (vd: Exness-Real4)"/>
+<button class="btn btn-secondary btn-sm" onclick="addMT4()">+ Thêm</button>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeModals()">Hủy</button>
+<button class="btn btn-primary" id="btn-save-lic" onclick="saveLicense()">💾 Lưu</button>
+</div>
+</div>
+</div>
+<div id="m-detail" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModals()">
+<div class="modal modal-large" onclick="event.stopPropagation()">
+<div class="modal-header"><h3>Chi tiết License</h3><button class="modal-close" onclick="closeModals()">✕</button></div>
+<div class="modal-body" id="m-detail-body"></div>
+</div>
+</div>
+
+<div class="saving-bar" id="saving-bar"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_PWD = 'Admin@2024!';
+const PWD_KEY = 'ea_pwd_hash'; // localStorage — stores SHA-256 hash
+const AUTH_KEY = 'ea_authed'; // sessionStorage — cleared on tab close
+const CFG_OWNER = 'ea_owner'; // localStorage — not sensitive
+const CFG_REPO = 'ea_repo'; // localStorage — not sensitive
+const TOKEN_KEY = 'ea_gh_token'; // sessionStorage — cleared on tab close
+const SESSION_TIMEOUT = 8 * 3600 * 1000; // 8 hours
+async function sha256(str) {
+const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function initPwd() {
+if (!localStorage.getItem(PWD_KEY)) {
+localStorage.setItem(PWD_KEY, await sha256(DEFAULT_PWD));
+}
+}
+
+async function verifyPass() {
+const val = qs('#inp-pass').value;
+const hash = await sha256(val);
+const stored = localStorage.getItem(PWD_KEY);
+if (hash !== stored) {
+qs('#pass-error').textContent = 'Mật khẩu không đúng.';
+qs('#pass-error').style.display = 'block';
+qs('#inp-pass').value = '';
+return;
+}
+sessionStorage.setItem(AUTH_KEY, Date.now().toString());
+qs('#screen-pass').style.display = 'none';
+checkGitHubConfig();
+}
+
+async function changePwd() {
+const cur = qs('#pwd-cur').value;
+const nw = qs('#pwd-new').value;
+const cfm = qs('#pwd-cfm').value;
+if (!cur || !nw || !cfm) { toast('Điền đầy đủ 3 ô','error'); return; }
+if (nw !== cfm) { toast('Mật khẩu mới không khớp','error'); return; }
+if (nw.length < 8) { toast('Mật khẩu tối thiểu 8 ký tự','error'); return; }
+const curHash = await sha256(cur);
+if (curHash !== localStorage.getItem(PWD_KEY)) { toast('Mật khẩu hiện tại sai','error'); return; }
+localStorage.setItem(PWD_KEY, await sha256(nw));
+qs('#pwd-cur').value = qs('#pwd-new').value = qs('#pwd-cfm').value = '';
+toast('Đã đổi mật khẩu thành công ✓');
+}
+
+function isSessionValid() {
+const t = sessionStorage.getItem(AUTH_KEY);
+if (!t) return false;
+return (Date.now() - parseInt(t)) < SESSION_TIMEOUT;
+}
+
+function doLogout() {
+sessionStorage.removeItem(AUTH_KEY);
+sessionStorage.removeItem(TOKEN_KEY);
+location.reload();
+}
+let cfg = {};
+
+function getCfg() {
+return {
+owner: localStorage.getItem(CFG_OWNER) || '',
+repo: localStorage.getItem(CFG_REPO) || '',
+token: sessionStorage.getItem(TOKEN_KEY) || ''
+};
+}
+
+async function ghGet(path) {
+const c = getCfg();
+const r = await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${path}`, {
+headers: { Authorization: `token ${c.token}`, Accept: 'application/vnd.github.v3+json' }
+});
+if (r.status === 404) return null;
+if (r.status === 401) { toast('Token hết hạn — vui lòng đăng xuất và đăng nhập lại','error'); return null; }
+if (!r.ok) throw new Error((await r.json()).message || `HTTP ${r.status}`);
+return r.json();
+}
+
+async function ghPut(path, content, sha, msg) {
+const c = getCfg();
+const body = { message: msg || 'Update', content: btoa(unescape(encodeURIComponent(content))) };
+if (sha) body.sha = sha;
+const r = await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${path}`, {
+method: 'PUT',
+headers: { Authorization: `token ${c.token}`, 'Content-Type': 'application/json' },
+body: JSON.stringify(body)
+});
+if (!r.ok) throw new Error((await r.json()).message || `HTTP ${r.status}`);
+return (await r.json()).content.sha;
+}
+let shas = { licenses: null, verify: null };
+
+async function loadData(showOk = false) {
+try {
+const f = await ghGet('data/licenses.json');
+if (f) {
+const txt = decodeURIComponent(escape(atob(f.content.replace(/\n/g,''))));
+state.licenses = JSON.parse(txt).licenses || [];
+shas.licenses = f.sha;
+} else {
+state.licenses = [];
+shas.licenses = null;
+}
+const vf = await ghGet('data/verify.txt');
+shas.verify = vf ? vf.sha : null;
+
+renderAll();
+qs('#sync-info').textContent = 'Sync ' + new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+if (showOk) toast('Đã tải dữ liệu mới nhất');
+} catch(e) { toast('Lỗi tải: ' + e.message,'error'); }
+}
+
+async function saveData(msg) {
+setSaving(true);
+try {
+
+const [lf, vf] = await Promise.all([ghGet('data/licenses.json'), ghGet('data/verify.txt')]);
+shas.licenses = lf ? lf.sha : null;
+shas.verify = vf ? vf.sha : null;
+
+const json = JSON.stringify({ licenses: state.licenses }, null, 2);
+shas.licenses = await ghPut('data/licenses.json', json, shas.licenses, msg || 'Update licenses');
+
+const vtxt = genVerifyTxt(state.licenses);
+shas.verify = await ghPut('data/verify.txt', vtxt, shas.verify, 'Regenerate verify.txt');
+
+qs('#sync-info').textContent = 'Saved ' + new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+renderAll();
+toast('Đã lưu lên GitHub ✓');
+} catch(e) { toast('Lỗi lưu: ' + e.message, 'error'); }
+finally { setSaving(false); }
+}
+function genVerifyTxt(licenses) {
+const today = new Date().toISOString().slice(0,10);
+const hdr = [
+'# EA License Verify File',
+'# Repo: ' + getCfg().owner + '/' + getCfg().repo,
+'# Updated: ' + new Date().toISOString(),
+'# Format: LICENSE_KEY|STATUS|EXPIRY_DATE|MT4_IDS',
+''
+].join('\n');
+const rows = licenses.map(l => {
+let st = l.status.toUpperCase();
+if (st === 'ACTIVE' && l.expiry_date && l.expiry_date < today) st = 'EXPIRED';
+const exp = l.expiry_date || '';
+const ids = (l.accounts||[]).map(a=>a.mt4_id).join(',');
+return `${l.license_key}|${st}|${exp}|${ids}`;
+});
+return hdr + rows.join('\n');
+}
+let state = { licenses: [] };
+let pendingMT4 = [];
+
+window.onload = async () => {
+await initPwd();
+if (!isSessionValid()) {
+qs('#screen-pass').style.display = 'flex';
+} else {
+checkGitHubConfig();
+}
+};
+
+function checkGitHubConfig() {
+const owner = localStorage.getItem(CFG_OWNER);
+const repo = localStorage.getItem(CFG_REPO);
+const token = sessionStorage.getItem(TOKEN_KEY);
+if (owner && repo && token) {
+showApp();
+} else {
+qs('#screen-setup').style.display = 'flex';
+if (owner) qs('#s-owner').value = owner;
+if (repo) qs('#s-repo').value = repo;
+}
+}
+
+async function doSetup() {
+const owner = qs('#s-owner').value.trim();
+const repo = qs('#s-repo').value.trim();
+const token = qs('#s-token').value.trim();
+const errEl = qs('#setup-error');
+const btn = qs('#btn-setup');
+errEl.style.display = 'none';
+if (!owner||!repo||!token) { errEl.textContent='Điền đầy đủ thông tin.'; errEl.style.display='block'; return; }
+
+btn.disabled = true; btn.textContent = 'Đang kiểm tra...';
+try {
+const r = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+});
+if (!r.ok) {
+const e = await r.json();
+throw new Error(r.status===401?'Token không hợp lệ hoặc hết hạn': r.status===404?'Repo không tìm thấy (kiểm tra tên và quyền truy cập)': e.message||`Lỗi ${r.status}`);
+}
+
+localStorage.setItem(CFG_OWNER, owner);
+localStorage.setItem(CFG_REPO, repo);
+sessionStorage.setItem(TOKEN_KEY, token);
+sessionStorage.setItem(AUTH_KEY, Date.now().toString());
+qs('#screen-setup').style.display = 'none';
+showApp();
+} catch(e) {
+errEl.textContent = 'Lỗi: ' + e.message;
+errEl.style.display = 'block';
+} finally { btn.disabled=false; btn.textContent='Kiểm tra & Kết nối'; }
+}
+
+function showApp() {
+qs('#app').style.display = 'flex';
+const c = getCfg();
+qs('#cfg-show-owner').textContent = c.owner;
+qs('#cfg-show-repo').textContent = c.repo;
+updateGuide();
+loadData();
+}
+function showPage(p) {
+document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+qs('#page-'+p).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(e=>{
+if (e.getAttribute('onclick')?.includes("'"+p+"'")) e.classList.add('active');
+});
+}
+function renderAll() { renderStats(); renderDash(); renderLicenses(); }
+
+function renderStats() {
+const today = new Date().toISOString().slice(0,10);
+const lics = state.licenses;
+const active = lics.filter(l=>l.status==='Active'&&!(l.expiry_date&&l.expiry_date<today)).length;
+const inactive = lics.filter(l=>l.status==='Inactive').length;
+const expired = lics.filter(l=>l.status==='Expired'||(l.expiry_date&&l.expiry_date<today&&l.status==='Active')).length;
+const accounts = lics.reduce((s,l)=>s+(l.accounts||[]).length,0);
+qs('#st-total').textContent = lics.length;
+qs('#st-active').textContent = active;
+qs('#st-expired').textContent = expired+inactive;
+qs('#st-accounts').textContent = accounts;
+}
+
+function renderDash() {
+const tbody = qs('#dash-tbody');
+const recent = [...state.licenses].sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,8);
+if (!recent.length) { tbody.innerHTML='<tr><td colspan="6" class="text-center">Chưa có license nào — hãy tạo license đầu tiên!</td></tr>'; return; }
+tbody.innerHTML = recent.map(l=>`<tr>
+<td><span class="license-key" onclick="copyText('${l.license_key}')" title="Click để copy">${l.license_key}</span></td>
+<td>${esc(l.user_name)}</td><td>${esc(l.ea_name)}</td>
+<td><span class="badge ${l.license_type.toLowerCase()}">${l.license_type}</span></td>
+<td>${expiryCell(l.expiry_date)}</td>
+<td><span class="badge ${l.status.toLowerCase()}">${l.status}</span></td>
+</tr>`).join('');
+}
+
+function renderLicenses() {
+const q = qs('#lic-q').value.toLowerCase();
+const st = qs('#lic-st').value;
+const tp = qs('#lic-tp').value;
+const list = state.licenses
+.filter(l=>(!q||(l.license_key+l.user_name+l.ea_name).toLowerCase().includes(q))&&(!st||l.status===st)&&(!tp||l.license_type===tp))
+.sort((a,b)=>b.created_at.localeCompare(a.created_at));
+const tbody = qs('#lic-tbody');
+if (!list.length) { tbody.innerHTML='<tr><td colspan="8" class="text-center">Không có kết quả</td></tr>'; return; }
+tbody.innerHTML = list.map(l=>`<tr>
+<td><span class="license-key" onclick="copyText('${l.license_key}')" title="Click để copy">${l.license_key}</span></td>
+<td>${esc(l.user_name)}</td><td>${esc(l.ea_name)}</td>
+<td><span class="badge ${l.license_type.toLowerCase()}">${l.license_type}</span></td>
+<td>${expiryCell(l.expiry_date)}</td>
+<td style="text-align:center">${(l.accounts||[]).length}/${l.max_accounts}</td>
+<td>
+<select class="badge ${l.status.toLowerCase()}" style="border:none;cursor:pointer;background:transparent;padding:3px 8px"
+onchange="quickStatus('${l.license_key}',this.value)" title="Đổi trạng thái">
+<option value="Active" ${l.status==='Active' ?'selected':''} style="background:#1a1d27">Active</option>
+<option value="Inactive" ${l.status==='Inactive'?'selected':''} style="background:#1a1d27">Inactive</option>
+<option value="Expired" ${l.status==='Expired' ?'selected':''} style="background:#1a1d27">Expired</option>
+</select>
+</td>
+<td><div class="actions">
+<button class="btn btn-secondary btn-sm" onclick="openDetail('${l.license_key}')">Chi tiết</button>
+<button class="btn btn-secondary btn-sm" onclick="openEdit('${l.license_key}')">Sửa</button>
+<button class="btn btn-danger btn-sm" onclick="deleteLic('${l.license_key}')">Xóa</button>
+</div></td>
+</tr>`).join('');
+}
+function genKey() {
+const b = new Uint8Array(9); crypto.getRandomValues(b);
+const h = Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+return `EA-${h.slice(0,6)}-${h.slice(6,12)}-${h.slice(12,18)}`;
+}
+
+function openCreateModal() {
+qs('#m-lic-title').textContent='Tạo License mới'; qs('#f-key').value='';
+qs('#f-name').value=''; qs('#f-ea').value=''; qs('#f-type').value='Monthly';
+qs('#f-expiry').value=daysLater(30); qs('#f-max').value=1;
+qs('#f-status').value='Active'; qs('#f-note').value='';
+qs('#f-phone').value=''; qs('#f-email').value='';
+qs('#f-mt4-id').value=''; qs('#f-mt4-br').value='';
+pendingMT4=[];
+renderPending();
+onTypeChange();
+qs('#m-lic').style.display='flex';
+}
+
+function openEdit(key) {
+const l = state.licenses.find(x=>x.license_key===key);
+if (!l) return;
+qs('#m-lic-title').textContent='Chỉnh sửa License'; qs('#f-key').value=key;
+qs('#f-name').value=l.user_name; qs('#f-ea').value=l.ea_name;
+qs('#f-type').value=l.license_type; qs('#f-expiry').value=l.expiry_date||'';
+qs('#f-max').value=l.max_accounts; qs('#f-status').value=l.status;
+qs('#f-note').value=l.note||'';
+qs('#f-phone').value=l.phone||''; qs('#f-email').value=l.email||'';
+pendingMT4=[...(l.accounts||[])];
+renderPending(); onTypeChange();
+qs('#m-lic').style.display='flex';
+}
+
+function renderPending() {
+qs('#f-mt4-list').innerHTML = pendingMT4.map((a,i)=>`
+<div class="mt4-row">
+<input value="${esc(a.mt4_id)}" disabled/>
+<input value="${esc(a.broker||'')}" disabled/>
+<button class="btn btn-danger btn-sm" onclick="pendingMT4.splice(${i},1);renderPending()">✕</button>
+</div>`).join('');
+}
+
+function addMT4() {
+const id = qs('#f-mt4-id').value.trim();
+const br = qs('#f-mt4-br').value.trim();
+if (!id) { toast('Nhập MT4 ID','error'); return; }
+if (pendingMT4.find(a=>a.mt4_id===id)) { toast('MT4 ID đã có trong danh sách','error'); return; }
+pendingMT4.push({mt4_id:id, broker:br||null, activated_at:new Date().toISOString()});
+qs('#f-mt4-id').value=''; qs('#f-mt4-br').value='';
+renderPending();
+}
+
+async function saveLicense() {
+const key = qs('#f-key').value;
+const name = qs('#f-name').value.trim();
+const ea = qs('#f-ea').value.trim();
+const type = qs('#f-type').value;
+if (!name||!ea) { toast('Điền tên khách hàng và tên EA','error'); return; }
+const exp = type==='Lifetime'? null : (qs('#f-expiry').value||null);
+const now = new Date().toISOString();
+const phone = qs('#f-phone').value.trim()||null;
+const email = qs('#f-email').value.trim()||null;
+const note = qs('#f-note').value.trim()||null;
+const status = qs('#f-status').value;
+const maxAcc = parseInt(qs('#f-max').value)||1;
+if (!key) {
+state.licenses.push({
+license_key:genKey(), user_name:name, ea_name:ea, license_type:type,
+expiry_date:exp, status, max_accounts:maxAcc,
+phone, email, note, accounts:pendingMT4, created_at:now, updated_at:now
+});
+} else {
+const idx = state.licenses.findIndex(l=>l.license_key===key);
+if (idx<0) return;
+Object.assign(state.licenses[idx],{
+user_name:name, ea_name:ea, license_type:type, expiry_date:exp,
+status, max_accounts:maxAcc, phone, email, note, accounts:pendingMT4, updated_at:now
+});
+}
+closeModals();
+await saveData(key?`Update ${key}`:`Create license for ${name}`);
+}
+
+async function quickStatus(key, status) {
+const l=state.licenses.find(x=>x.license_key===key);
+if (!l) return;
+l.status=status; l.updated_at=new Date().toISOString();
+await saveData(`${key} → ${status}`);
+}
+
+async function deleteLic(key) {
+if (!confirm(`Xóa license ${key}?\nTất cả MT4 accounts liên quan sẽ bị xóa.`)) return;
+state.licenses=state.licenses.filter(l=>l.license_key!==key);
+await saveData(`Delete ${key}`);
+}
+function openDetail(key) {
+const l = state.licenses.find(x=>x.license_key===key);
+if (!l) return;
+qs('#m-detail-body').innerHTML=`
+<div class="detail-grid">
+<div class="detail-item"><label>License Key</label><span class="license-key" onclick="copyText('${l.license_key}')">${l.license_key}</span></div>
+<div class="detail-item"><label>Trạng thái</label><span class="badge ${l.status.toLowerCase()}">${l.status}</span></div>
+<div class="detail-item"><label>Khách hàng</label><span>${esc(l.user_name)}</span></div>
+<div class="detail-item"><label>Tên EA</label><span>${esc(l.ea_name)}</span></div>
+<div class="detail-item"><label>Số điện thoại</label><span>${esc(l.phone||'–')}</span></div>
+<div class="detail-item"><label>Email</label><span>${esc(l.email||'–')}</span></div>
+<div class="detail-item"><label>Loại</label><span class="badge ${l.license_type.toLowerCase()}">${l.license_type}</span></div>
+<div class="detail-item"><label>Hết hạn</label><span>${l.expiry_date||'<span style="color:var(--pur)">Vĩnh viễn</span>'}</span></div>
+<div class="detail-item"><label>Max Accounts</label><span>${l.max_accounts}</span></div>
+<div class="detail-item"><label>Ghi chú</label><span>${esc(l.note||'–')}</span></div>
+</div>
+<div class="section-title">MT4 Accounts (${(l.accounts||[]).length}/${l.max_accounts})</div>
+<div class="card" style="margin-bottom:16px">
+<table class="table"><thead><tr><th>MT4 ID</th><th>Broker</th><th>Ngày thêm</th><th></th></tr></thead>
+<tbody>${(l.accounts||[]).length
+? (l.accounts||[]).map(a=>`<tr>
+<td><b>${a.mt4_id}</b></td>
+<td>${a.broker||'–'}</td>
+<td>${fmtDate(a.activated_at)}</td>
+<td><button class="btn btn-danger btn-sm" onclick="removeAcc('${key}','${a.mt4_id}')">Xóa</button></td>
+</tr>`).join('')
+: '<tr><td colspan="4" class="text-center">Chưa có account nào</td></tr>'}
+</tbody></table>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<input id="d-id" placeholder="MT4 ID mới" style="flex:1;min-width:120px"/>
+<input id="d-br" placeholder="Broker" style="flex:1;min-width:120px"/>
+<button class="btn btn-primary" onclick="addAcc('${key}')">+ Thêm Account</button>
+</div>`;
+qs('#m-detail').style.display='flex';
+}
+
+async function addAcc(key) {
+const id=qs('#d-id').value.trim(); const br=qs('#d-br').value.trim();
+if (!id) { toast('Nhập MT4 ID','error'); return; }
+const l=state.licenses.find(x=>x.license_key===key); if (!l) return;
+if (!l.accounts) l.accounts=[];
+if (l.accounts.find(a=>a.mt4_id===id)) { toast('MT4 ID đã tồn tại','error'); return; }
+if (l.accounts.length>=l.max_accounts) { toast(`Đã đạt giới hạn ${l.max_accounts} accounts`,'error'); return; }
+l.accounts.push({mt4_id:id, broker:br||null, activated_at:new Date().toISOString()});
+l.updated_at=new Date().toISOString();
+closeModals();
+await saveData(`Add MT4 ${id} to ${key}`);
+}
+
+async function removeAcc(key, id) {
+if (!confirm(`Xóa MT4 account ${id} khỏi license này?`)) return;
+const l=state.licenses.find(x=>x.license_key===key); if (!l) return;
+l.accounts=(l.accounts||[]).filter(a=>a.mt4_id!==id);
+l.updated_at=new Date().toISOString();
+closeModals();
+await saveData(`Remove MT4 ${id} from ${key}`);
+}
+function updateGuide() {
+const c=getCfg();
+const url=`https://raw.githubusercontent.com/${c.owner||'OWNER'}/${c.repo||'REPO'}/main/data/verify.txt`;
+qs('#raw-url').textContent=url;
+qs('#mql-code').textContent=getMQL(url);
+}
+
+function getMQL(url) {
+return `//+-----------------------------------------------------------+
+#property strict
+
+#define VERIFY_URL "${url}"
+#define LICENSE_KEY "EA-XXXXXX-YYYYYY-ZZZZZZ" // ← Key của khách này
+
+bool lic_valid = false;
+datetime lic_last_check = 0;
+string lic_status_msg = "CHUA KIEM TRA";
+const int LIC_INTERVAL = 3600; // Kiểm tra mỗi 1 giờ
+bool CheckLicenseOnline()
+{
+if(IsTesting() || IsOptimization()) {
+lic_status_msg = "BACKTEST MODE";
+return true; // Cho phép chạy backtest
+}
+
+char post[], result[]; string headers;
+ResetLastError();
+int code = WebRequest("GET", VERIFY_URL, "", "", 8000, post, 0, result, headers);
+
+if(code < 0) {
+int err = GetLastError();
+if(err == 4014) {
+lic_status_msg = "LOI: Them URL vao Allowed URLs!";
+Alert("Vao Tools > Options > Expert Advisors\\n"
+"Them vao Allowed URLs:\\n" + VERIFY_URL);
+} else {
+lic_status_msg = "LOI KET NOI SERVER (" + IntegerToString(err) + ")";
+}
+return false;
+}
+
+string txt = CharArrayToString(result);
+string lines[]; int n = StringSplit(txt, '\\n', lines);
+
+for(int i = 0; i < n; i++) {
+string ln = lines[i];
+StringTrimLeft(ln); StringTrimRight(ln);
+if(StringLen(ln)==0 || StringGetCharacter(ln,0)=='#') continue;
+if(StringFind(ln, LICENSE_KEY+"|") != 0) continue; // Không phải key của mình
+
+string p[]; int pc = StringSplit(ln, '|', p);
+if(pc < 3) continue;
+
+string status = p[1]; // ACTIVE / INACTIVE / EXPIRED
+string expiry = p[2]; // YYYY-MM-DD hoặc rỗng = Lifetime
+string mt4ids = pc > 3 ? p[3] : ""; // 12345678,99999999
+if(status != "ACTIVE") {
+lic_status_msg = "BAN QUYEN " + status;
+Alert("[EA Bot] " + lic_status_msg + "\\nLien he admin de gia han.");
+return false;
+}
+if(StringLen(expiry) > 0) {
+datetime expDt = StringToTime(expiry + " 23:59:59");
+if(TimeCurrent() > expDt) {
+lic_status_msg = "BAN QUYEN DA HET HAN (" + expiry + ")";
+Alert("[EA Bot] " + lic_status_msg);
+return false;
+}
+}
+string myID = IntegerToString(AccountNumber());
+if(StringFind("," + mt4ids + ",", "," + myID + ",") >= 0) {
+lic_status_msg = "HOP LE - TK #" + myID;
+lic_last_check = TimeCurrent();
+Print("[License] VALID | TK #", myID, " | Key: ", LICENSE_KEY);
+return true;
+}
+
+lic_status_msg = "TK #" + myID + " CHUA DUOC THEM VAO LICENSE";
+Alert("[EA Bot] " + lic_status_msg + "\\nYeu cau admin them TK nay vao he thong.");
+return false;
+}
+
+lic_status_msg = "LICENSE KEY KHONG TON TAI";
+Alert("[EA Bot] Key ban quyen khong hop le!\\nLien he admin.");
+return false;
+}
+bool CheckLicensePeriodic()
+{
+if(IsTesting() || IsOptimization()) return true;
+if(TimeCurrent() - lic_last_check < LIC_INTERVAL) return true;
+
+Print("[License] Kiem tra lai...");
+if(!CheckLicenseOnline()) {
+Alert("[EA Bot] License bi thu hoi: " + lic_status_msg);
+ExpertRemove(); return false;
+}
+return true;
+}`;
+}
+
+function copyMQL() {
+navigator.clipboard.writeText(qs('#mql-code').textContent);
+toast('Đã copy MQL4 code!');
+}
+function onTypeChange() {
+const t=qs('#f-type').value; const g=qs('#f-exp-grp');
+qs('#f-expiry').disabled=t==='Lifetime';
+g.style.opacity=t==='Lifetime'?'0.4':'1';
+if(t==='Lifetime') qs('#f-expiry').value='';
+else if(!qs('#f-expiry').value) qs('#f-expiry').value=daysLater(t==='Trial'?7:30);
+}
+
+function expiryCell(d) {
+if(!d) return '<span style="color:var(--pur)">Vĩnh viễn</span>';
+const diff=Math.ceil((new Date(d)-new Date())/86400000);
+if(diff<0) return `<span class="expiry-past">${d} (đã hết)</span>`;
+if(diff<=7) return `<span class="expiry-near">${d} (còn ${diff} ngày)</span>`;
+return d;
+}
+
+function daysLater(n) {
+const d=new Date(); d.setDate(d.getDate()+n);
+return d.toISOString().slice(0,10);
+}
+
+function fmtDate(s) { return s ? new Date(s).toLocaleDateString('vi-VN') : '–'; }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function copyText(t) { navigator.clipboard.writeText(t).then(()=>toast('Đã copy: '+t,'info')); }
+function qs(s) { return document.querySelector(s); }
+
+function togglePwd(id, btn) {
+const inp=qs('#'+id);
+if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+else{inp.type='password';btn.textContent='👁';}
+}
+
+function setSaving(b) {
+qs('#saving-bar').className='saving-bar'+(b?' show':'');
+document.querySelectorAll('.btn-primary').forEach(el=>{ el.disabled=b; });
+}
+
+function closeModals() {
+['m-lic','m-detail'].forEach(id=>qs('#'+id).style.display='none');
+}
+
+let _toastTimer;
+function toast(msg, type='success') {
+const el=qs('#toast');
+el.textContent=msg; el.className='toast '+type+' show';
+clearTimeout(_toastTimer);
+_toastTimer=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModals(); });
+</script>
+</body>
+</html>
